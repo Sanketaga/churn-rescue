@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Churn Rescue · Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">CR</div>
+      <div>
+        <div class="brand-name">Churn Rescue</div>
+        <div class="brand-sub" id="merchant">AI recovery for failed PayPal subscription payments</div>
+      </div>
+    </div>
+    <div class="top-right">
+      <span class="badge" id="mode-badge">PayPal: …</span>
+      <span class="badge ai" id="ai-badge">AI: …</span>
+      <label class="toggle" title="Autopilot sends offers without merchant review">
+        <input type="checkbox" id="autopilot"> <span>Autopilot</span>
+      </label>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="kpis">
+      <div class="kpi"><div class="kpi-label">Revenue at risk</div><div class="kpi-value warn" id="k-risk">$0</div><div class="kpi-foot">monthly, open rescues</div></div>
+      <div class="kpi"><div class="kpi-label">Revenue recovered</div><div class="kpi-value good" id="k-rec">$0</div><div class="kpi-foot">monthly recurring</div></div>
+      <div class="kpi"><div class="kpi-label">Subscribers saved</div><div class="kpi-value" id="k-saved">0</div><div class="kpi-foot" id="k-saved-foot">of 0 failed payments</div></div>
+      <div class="kpi"><div class="kpi-label">Recovery rate</div><div class="kpi-value" id="k-rate">–</div><div class="kpi-foot">closed rescues</div></div>
+    </section>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Rescues</h2>
+          <span class="muted small">Every failed payment gets its own AI-chosen offer</span>
+        </div>
+        <div id="rescues" class="rescues">
+          <div class="empty">No failed payments yet. Use <b>Simulate failed payment</b> on a subscriber, or send a <code>BILLING.SUBSCRIPTION.PAYMENT.FAILED</code> webhook.</div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="panel">
+          <div class="panel-head"><h2>Subscribers</h2></div>
+          <table class="subs">
+            <thead><tr><th>Customer</th><th>Plan</th><th>Status</th><th></th></tr></thead>
+            <tbody id="subs"></tbody>
+          </table>
+          <form id="track" class="track hidden">
+            <input id="track-id" placeholder="Track a sandbox subscription ID (I-…)">
+            <button class="btn small">Track</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><h2>PayPal API calls</h2><span class="muted small">live audit log</span></div>
+          <ul id="api" class="log mono"></ul>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head"><h2>Activity</h2></div>
+          <ul id="events" class="log"></ul>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

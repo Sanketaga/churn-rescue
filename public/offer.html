@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your subscription</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="offer-page">
+  <div class="offer-card" id="card">
+    <div class="muted">Loading…</div>
+  </div>
+  <script>
+    const id = location.pathname.split('/')[2];
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const card = document.getElementById('card');
+
+    async function load() {
+      const res = await fetch('/api/offer/' + id);
+      if (!res.ok) { card.innerHTML = '<h2>This offer is not available</h2>'; return; }
+      const o = await res.json();
+      if (o.status === 'recovered' || o.status === 'lost') {
+        card.innerHTML = `<div class="merchant">${esc(o.merchant)}</div>
+          <div class="done-icon ${o.status === 'recovered' ? '' : 'bad'}">${o.status === 'recovered' ? '✓' : '×'}</div>
+          <h2>${o.status === 'recovered' ? "You're all set!" : 'Sorry to see you go'}</h2>
+          <p class="muted">${esc(o.outcome)}</p>`;
+        return;
+      }
+      card.innerHTML = `
+        <div class="merchant">${esc(o.merchant)}</div>
+        <h2>${esc(o.subject)}</h2>
+        <p class="letter">${esc(o.message).replace(/\n/g, '<br>')}</p>
+        <div class="options">
+          ${o.options.map((op) => `
+            <button class="option ${op.key === o.recommended ? 'rec' : ''}" data-opt="${op.key}">
+              ${op.key === o.recommended ? '<span class="rec-tag">Recommended for you</span>' : ''}
+              <span class="op-title">${esc(op.title)}</span>
+              <span class="op-detail">${esc(op.detail)}</span>
+            </button>`).join('')}
+        </div>
+        <button class="link-btn" id="decline">No thanks, cancel my subscription</button>
+        <div class="secure">Payments and plan changes are handled securely by PayPal.</div>`;
+    }
+
+    document.addEventListener('click', async (e) => {
+      const opt = e.target.closest('[data-opt]');
+      if (opt) {
+        document.querySelectorAll('.option').forEach((b) => (b.disabled = true));
+        opt.classList.add('busy');
+        const res = await fetch(`/api/offer/${id}/accept`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ option: opt.dataset.opt }) });
+        const out = await res.json();
+        if (out.redirect) { location.href = out.redirect; return; }
+        if (out.error) alert(out.error);
+        load();
+      }
+      if (e.target.id === 'decline') {
+        await fetch(`/api/offer/${id}/decline`, { method: 'POST' });
+        load();
+      }
+    });
+    load();
+  </script>
+</body>
+</html>
